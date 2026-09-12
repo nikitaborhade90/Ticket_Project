@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Datastraw Support — Tickets</title>
+<link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <a class="brand" href="/"><span class="slash">/</span>Datastraw<span class="slash">/</span> Support</a>
+    <div class="brand-sub">Customer ticket queue</div>
+  </div>
+  <div class="nav">
+    <a href="/" class="active">Tickets</a>
+    <a href="/create.html">New ticket</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="page-head">
+    <div>
+      <h1>All tickets</h1>
+      <p>Search, filter by status, and open a ticket to update it.</p>
+    </div>
+    <a class="btn" href="/create.html">+ New ticket</a>
+  </div>
+
+  <div class="stats" id="stats">
+    <div class="stat"><div class="n">–</div><div class="l">Open</div></div>
+    <div class="stat"><div class="n">–</div><div class="l">In progress</div></div>
+    <div class="stat"><div class="n">–</div><div class="l">Closed</div></div>
+    <div class="stat warn"><div class="n">–</div><div class="l">High priority, unresolved</div></div>
+  </div>
+
+  <div class="controls">
+    <input class="search-input" id="search" type="text"
+           placeholder="Search by name, ticket ID, email, or description…" />
+    <button class="chip active" data-status="">All</button>
+    <button class="chip" data-status="Open">Open</button>
+    <button class="chip" data-status="In Progress">In Progress</button>
+    <button class="chip" data-status="Closed">Closed</button>
+  </div>
+
+  <div id="table-wrap">
+    <div class="loading">Loading tickets…</div>
+  </div>
+</div>
+
+<script src="/static/app.js"></script>
+<script>
+  let currentStatus = "";
+  let currentSearch = "";
+  let searchTimer = null;
+
+  async function loadStats() {
+    try {
+      const s = await apiFetch("/stats");
+      const el = document.getElementById("stats");
+      el.innerHTML = `
+        <div class="stat"><div class="n">${s.Open}</div><div class="l">Open</div></div>
+        <div class="stat"><div class="n">${s["In Progress"]}</div><div class="l">In progress</div></div>
+        <div class="stat"><div class="n">${s.Closed}</div><div class="l">Closed</div></div>
+        <div class="stat warn"><div class="n">${s.high_priority_open}</div><div class="l">High priority, unresolved</div></div>
+      `;
+    } catch (e) { /* stats are non-critical, fail quietly */ }
+  }
+
+  async function loadTickets() {
+    const wrap = document.getElementById("table-wrap");
+    const params = new URLSearchParams();
+    if (currentStatus) params.set("status", currentStatus);
+    if (currentSearch) params.set("search", currentSearch);
+    try {
+      const tickets = await apiFetch("/tickets?" + params.toString());
+      if (tickets.length === 0) {
+        wrap.innerHTML = `<div class="empty-state">No tickets match. Try a different search or filter — or <a href="/create.html">create one</a>.</div>`;
+        return;
+      }
+      wrap.innerHTML = `
+        <table class="ticket-table">
+          <thead>
+            <tr><th>ID</th><th>Customer</th><th>Subject</th><th>Priority</th><th>Status</th><th>Created</th></tr>
+          </thead>
+          <tbody>
+            ${tickets.map(t => `
+              <tr class="clickable-row" data-href="/ticket.html?id=${encodeURIComponent(t.ticket_id)}">
+                <td class="mono">${t.ticket_id}</td>
+                <td>${escapeHtml(t.customer_name)}</td>
+                <td>${escapeHtml(t.subject)}</td>
+                <td>${priorityBadge(t.priority)}</td>
+                <td>${statusBadge(t.status)}</td>
+                <td style="color:var(--ink-soft); font-size:13px;">${formatDate(t.created_at)}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      `;
+      wrap.querySelectorAll(".clickable-row").forEach(row => {
+        row.style.cursor = "pointer";
+        row.addEventListener("click", () => { window.location.href = row.dataset.href; });
+      });
+    } catch (e) {
+      wrap.innerHTML = `<div class="error-block">Couldn't load tickets: ${escapeHtml(e.message)}</div>`;
+    }
+  }
+
+  document.querySelectorAll(".chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+      chip.classList.add("active");
+      currentStatus = chip.dataset.status;
+      loadTickets();
+    });
+  });
+
+  document.getElementById("search").addEventListener("input", (e) => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      currentSearch = e.target.value;
+      loadTickets();
+    }, 250); // debounce so it feels live without hammering the API
+  });
+
+  loadStats();
+  loadTickets();
+</script>
+</body>
+</html>

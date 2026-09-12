@@ -1,0 +1,383 @@
+/* Datastraw Support CRM — design system
+   Palette: near-black ink on warm paper, one signal color reserved
+   for priority/status meaning (not decoration). Typeface pairing:
+   Plex Sans for interface text, Plex Mono for ticket IDs and
+   timestamps — the mono face is a functional marker of "system data",
+   not a stylistic flourish. */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root {
+  --ink: #16181c;
+  --ink-soft: #55595f;
+  --paper: #faf9f6;
+  --panel: #ffffff;
+  --line: #dfdcd4;
+  --line-strong: #16181c;
+
+  --signal-open: #b25400;
+  --signal-progress: #1a56a8;
+  --signal-closed: #4b7a4e;
+  --signal-high: #a3262c;
+
+  --radius: 3px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.mono { font-family: 'IBM Plex Mono', monospace; }
+
+a { color: inherit; }
+
+/* ---- Top bar ---- */
+.topbar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 22px 32px 18px;
+  border-bottom: 2px solid var(--line-strong);
+}
+
+.brand {
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+
+.brand .slash { color: var(--signal-open); }
+
+.brand-sub {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-top: 2px;
+}
+
+.nav a {
+  text-decoration: none;
+  font-size: 14px;
+  margin-left: 22px;
+  padding-bottom: 3px;
+  border-bottom: 2px solid transparent;
+}
+
+.nav a.active,
+.nav a:hover {
+  border-bottom-color: var(--ink);
+}
+
+/* ---- Layout ---- */
+.wrap {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.page-head h1 {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.page-head p {
+  color: var(--ink-soft);
+  margin: 4px 0 0;
+  font-size: 13.5px;
+}
+
+/* ---- Stat strip ---- */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  margin-bottom: 28px;
+}
+
+.stat {
+  background: var(--panel);
+  padding: 14px 16px;
+}
+
+.stat .n {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.stat .l {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-top: 6px;
+}
+
+.stat.warn .n { color: var(--signal-high); }
+
+/* ---- Controls ---- */
+.controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 220px;
+  padding: 9px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: 14px;
+  background: var(--panel);
+}
+
+.search-input:focus { outline: 2px solid var(--signal-progress); outline-offset: 1px; }
+
+.chip {
+  padding: 8px 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--panel);
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.chip.active {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.btn {
+  display: inline-block;
+  padding: 10px 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--ink);
+  color: var(--paper);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+}
+
+.btn:hover { background: #000; }
+
+.btn.secondary {
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.btn.secondary:hover { background: #f0efe9; }
+
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ---- Table ---- */
+.ticket-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--line);
+}
+
+.ticket-table th {
+  text-align: left;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+  font-weight: 500;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.ticket-table td {
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+  vertical-align: top;
+}
+
+.ticket-table tr:hover td { background: #f2f0ea; }
+
+.ticket-table a.row-link {
+  text-decoration: none;
+  display: block;
+}
+
+.empty-state {
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--ink-soft);
+  border: 1px dashed var(--line);
+}
+
+/* ---- Badges ---- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+
+.badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.badge.status-open { color: var(--signal-open); }
+.badge.status-in-progress { color: var(--signal-progress); }
+.badge.status-closed { color: var(--signal-closed); }
+
+.badge.priority-high { color: var(--signal-high); border-style: solid; }
+.badge.priority-medium { color: var(--ink-soft); }
+.badge.priority-low { color: var(--ink-soft); }
+
+/* ---- Forms ---- */
+.form-card {
+  background: var(--panel);
+  border: 1px solid var(--line-strong);
+  padding: 28px;
+  max-width: 640px;
+}
+
+.field { margin-bottom: 18px; }
+
+.field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.field .hint {
+  font-size: 12px;
+  color: var(--ink-soft);
+  font-weight: 400;
+}
+
+.field input,
+.field textarea,
+.field select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: 14px;
+  background: var(--panel);
+}
+
+.field textarea { resize: vertical; min-height: 100px; }
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  outline: 2px solid var(--signal-progress);
+  outline-offset: 1px;
+}
+
+.form-msg {
+  margin-top: 14px;
+  font-size: 13.5px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  display: none;
+}
+
+.form-msg.show { display: block; }
+.form-msg.ok { background: #eef4ec; color: var(--signal-closed); border: 1px solid var(--signal-closed); }
+.form-msg.err { background: #fbecec; color: var(--signal-high); border: 1px solid var(--signal-high); }
+
+/* ---- Detail page ---- */
+.detail-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.detail-id {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 720px) {
+  .detail-grid { grid-template-columns: 1fr; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  padding: 22px;
+  margin-bottom: 20px;
+}
+
+.panel h2 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+  font-weight: 500;
+  margin: 0 0 14px;
+}
+
+.kv { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.kv:last-child { border-bottom: none; }
+.kv .k { color: var(--ink-soft); }
+
+.note {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13.5px;
+}
+.note:last-child { border-bottom: none; }
+.note .note-time { color: var(--ink-soft); font-size: 11.5px; margin-top: 4px; }
+
+.status-row { display: flex; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+
+.loading, .error-block {
+  padding: 40px;
+  text-align: center;
+  color: var(--ink-soft);
+}

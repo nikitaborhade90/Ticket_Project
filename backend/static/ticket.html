@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ticket — Datastraw Support</title>
+<link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <a class="brand" href="/"><span class="slash">/</span>Datastraw<span class="slash">/</span> Support</a>
+    <div class="brand-sub">Customer ticket queue</div>
+  </div>
+  <div class="nav">
+    <a href="/">Tickets</a>
+    <a href="/create.html">New ticket</a>
+  </div>
+</div>
+
+<div class="wrap" id="content">
+  <div class="loading">Loading ticket…</div>
+</div>
+
+<script src="/static/app.js"></script>
+<script>
+  const ticketId = qs("id");
+  const content = document.getElementById("content");
+
+  function render(t) {
+    document.title = `${t.ticket_id} — Datastraw Support`;
+    content.innerHTML = `
+      <a href="/" style="font-size:13px; color:var(--ink-soft); text-decoration:none;">&larr; All tickets</a>
+
+      <div class="detail-head" style="margin-top:14px;">
+        <div>
+          <div class="detail-id">${t.ticket_id} &middot; opened ${formatDate(t.created_at)}</div>
+          <h1 style="margin:6px 0 0;">${escapeHtml(t.subject)}</h1>
+          <div class="status-row" style="margin-top:10px;">
+            ${statusBadge(t.status)} ${priorityBadge(t.priority)}
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-grid">
+        <div>
+          <div class="panel">
+            <h2>Description</h2>
+            <p style="white-space:pre-wrap; margin:0;">${escapeHtml(t.description)}</p>
+          </div>
+
+          <div class="panel">
+            <h2>Notes</h2>
+            <div id="notes-list">
+              ${t.notes.length === 0
+                ? `<p style="color:var(--ink-soft); font-size:13.5px; margin:0;">No notes yet.</p>`
+                : t.notes.map(n => `
+                    <div class="note">
+                      <div>${escapeHtml(n.note_text)}</div>
+                      <div class="note-time">${formatDate(n.created_at)}</div>
+                    </div>
+                  `).join("")}
+            </div>
+            <form id="note-form" style="margin-top:16px;">
+              <div class="field" style="margin-bottom:10px;">
+                <textarea id="note-text" placeholder="Add an internal note…" style="min-height:70px;"></textarea>
+              </div>
+              <button class="btn secondary" type="submit">Add note</button>
+            </form>
+          </div>
+        </div>
+
+        <div>
+          <div class="panel">
+            <h2>Customer</h2>
+            <div class="kv"><span class="k">Name</span><span>${escapeHtml(t.customer_name)}</span></div>
+            <div class="kv"><span class="k">Email</span><span>${escapeHtml(t.customer_email)}</span></div>
+          </div>
+
+          <div class="panel">
+            <h2>Update status</h2>
+            <div class="field">
+              <select id="status-select">
+                <option value="Open" ${t.status === "Open" ? "selected" : ""}>Open</option>
+                <option value="In Progress" ${t.status === "In Progress" ? "selected" : ""}>In Progress</option>
+                <option value="Closed" ${t.status === "Closed" ? "selected" : ""}>Closed</option>
+              </select>
+            </div>
+            <button class="btn" id="status-save" style="width:100%;">Save status</button>
+            <div class="form-msg" id="status-msg"></div>
+          </div>
+
+          <div class="panel">
+            <h2>Timeline</h2>
+            <div class="kv"><span class="k">Created</span><span>${formatDate(t.created_at)}</span></div>
+            <div class="kv"><span class="k">Last updated</span><span>${formatDate(t.updated_at)}</span></div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById("status-save").addEventListener("click", async () => {
+      const statusMsg = document.getElementById("status-msg");
+      const newStatus = document.getElementById("status-select").value;
+      try {
+        await apiFetch(`/tickets/${encodeURIComponent(ticketId)}`, {
+          method: "PUT",
+          body: JSON.stringify({ status: newStatus }),
+        });
+        statusMsg.textContent = "Status updated.";
+        statusMsg.className = "form-msg show ok";
+        loadTicket();
+      } catch (err) {
+        statusMsg.textContent = `Couldn't update: ${err.message}`;
+        statusMsg.className = "form-msg show err";
+      }
+    });
+
+    document.getElementById("note-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const textEl = document.getElementById("note-text");
+      const text = textEl.value.trim();
+      if (!text) return;
+      try {
+        await apiFetch(`/tickets/${encodeURIComponent(ticketId)}`, {
+          method: "PUT",
+          body: JSON.stringify({ notes: text }),
+        });
+        loadTicket();
+      } catch (err) {
+        alert(`Couldn't add note: ${err.message}`);
+      }
+    });
+  }
+
+  async function loadTicket() {
+    if (!ticketId) {
+      content.innerHTML = `<div class="error-block">No ticket ID given. <a href="/">Back to tickets</a></div>`;
+      return;
+    }
+    try {
+      const t = await apiFetch(`/tickets/${encodeURIComponent(ticketId)}`);
+      render(t);
+    } catch (err) {
+      content.innerHTML = `<div class="error-block">Couldn't load ${escapeHtml(ticketId)}: ${escapeHtml(err.message)}. <a href="/">Back to tickets</a></div>`;
+    }
+  }
+
+  loadTicket();
+</script>
+</body>
+</html>

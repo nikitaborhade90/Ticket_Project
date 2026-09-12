@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>New ticket — Datastraw Support</title>
+<link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <a class="brand" href="/"><span class="slash">/</span>Datastraw<span class="slash">/</span> Support</a>
+    <div class="brand-sub">Customer ticket queue</div>
+  </div>
+  <div class="nav">
+    <a href="/">Tickets</a>
+    <a href="/create.html" class="active">New ticket</a>
+  </div>
+</div>
+
+<div class="wrap" style="max-width: 720px;">
+  <div class="page-head">
+    <div>
+      <h1>Create a ticket</h1>
+      <p>Log a new customer issue. A ticket ID is generated automatically.</p>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <form id="ticket-form">
+      <div class="field">
+        <label for="customer_name">Customer name</label>
+        <input id="customer_name" name="customer_name" type="text" required maxlength="120" />
+      </div>
+      <div class="field">
+        <label for="customer_email">Customer email</label>
+        <input id="customer_email" name="customer_email" type="email" required maxlength="200" />
+      </div>
+      <div class="field">
+        <label for="subject">Issue title</label>
+        <input id="subject" name="subject" type="text" required maxlength="200"
+               placeholder="e.g. Unable to reset password" />
+      </div>
+      <div class="field">
+        <label for="description">
+          Description
+          <span class="hint">— what the customer reported, in their own words if possible</span>
+        </label>
+        <textarea id="description" name="description" required maxlength="4000"></textarea>
+      </div>
+      <button class="btn" type="submit" id="submit-btn">Create ticket</button>
+      <div class="form-msg" id="form-msg"></div>
+    </form>
+  </div>
+</div>
+
+<script src="/static/app.js"></script>
+<script>
+  const form = document.getElementById("ticket-form");
+  const msg = document.getElementById("form-msg");
+  const submitBtn = document.getElementById("submit-btn");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    msg.className = "form-msg";
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Creating…";
+
+    const payload = {
+      customer_name: form.customer_name.value.trim(),
+      customer_email: form.customer_email.value.trim(),
+      subject: form.subject.value.trim(),
+      description: form.description.value.trim(),
+    };
+
+    try {
+      const result = await apiFetch("/tickets", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+      msg.textContent = `Created ${result.ticket_id} — redirecting…`;
+      msg.className = "form-msg show ok";
+      setTimeout(() => {
+        window.location.href = `/ticket.html?id=${encodeURIComponent(result.ticket_id)}`;
+      }, 700);
+    } catch (err) {
+      msg.textContent = `Couldn't create ticket: ${err.message}`;
+      msg.className = "form-msg show err";
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Create ticket";
+    }
+  });
+</script>
+</body>
+</html>
